@@ -79,9 +79,11 @@ minetest.register_chatcommand("sh", {
         if name ~= "singleplayer" then
             if minetest.get_player_by_name(name) == nil then return false, "You must be online to use this command" end
         end
+        local place = string.match(param, "^([%a%d_-]+)") or ""
         -- Ensure we stop users from placing unlimited homes when they are not allowed to
         local homes = home_point.count(name)
-        if not minetest.check_player_privs(name, {home_point_unlimited=true}) then
+        local old_target = home_point.get(name, place)
+        if old_target == "" and not minetest.check_player_privs(name, {home_point_unlimited=true}) then
             if minetest.check_player_privs(name, {home_point_super=true}) then
                 if homes+1 > home_point.home_point_super  then
                     return false, "You can only have "..tostring(home_point.home_point_super).." homes, currently you have "..tostring(homes).."."
@@ -99,7 +101,6 @@ minetest.register_chatcommand("sh", {
             end
         end
         -- Setup the place/home
-        local place = string.match(param, "^([%a%d_-]+)") or ""
         if place ~= "" then
             minetest.log("action", "[home_point] "..name.." saves a point as '"..place.."'")
             local rc = home_point.save(name, place)
@@ -137,7 +138,6 @@ minetest.register_chatcommand("sh", {
             end
             return rc, "Saved as "..name
         end
-        return false, "Uable to determine place_name"
     end,
 })
 
